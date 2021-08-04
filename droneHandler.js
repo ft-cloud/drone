@@ -1,4 +1,4 @@
-const session = require("./session");
+const session = require("sessionLib/session");
 const drone = require("./drone");
 const {app} = require('./droneServer.js');
 
