@@ -26,7 +26,7 @@ global.connection.connect();
 
 app.use(cors());
 
-app.get("/",(req, res) => {
+app.get("/api/:v/:server",(req, res) => {
     res.send(JSON.stringify({microService:"Drone"}))
 })
 
