@@ -1,17 +1,16 @@
 var uuid = require('uuid');
-
+const axios = require('axios');
 
 var drone = {
 
     addDroneMission: function (user, name,data) {
         return new Promise((resolve => {
+            const droneMission = global.database.collection("droneMission");
             const missionUUID = uuid.v4();
-            const sql = `INSERT INTO droneMission
-                         values ('${missionUUID}', ?, ?, ?)`;
-            global.connection.query(sql, [name, user,data!==undefined?data:'{}'], function (err, result) {
 
+            droneMission.insertOne({uuid: missionUUID,name: name, user:user,data:(data!==undefined?data:{})}).then(() => {
                 resolve(missionUUID);
-            });
+            })
 
         }));
 
@@ -20,14 +19,12 @@ var drone = {
     getAllUserMissions: function (user) {
         return new Promise((resolve, reject) => {
 
-            const sql = `SELECT uuid, name
-                         FROM droneMission
-                         WHERE user = ?`;
-            global.connection.query(sql, [user], function (err, result) {
+            const droneMission = global.database.collection("droneMission");
+           const cursor =  droneMission.find({user:user})
 
-                resolve(result);
-            });
-
+               cursor.toArray().then(missions=>{
+                resolve(missions);
+            })
 
         });
     },
@@ -38,36 +35,56 @@ var drone = {
 
         return new Promise((resolve, reject) => {
 
-            const sql = `SELECT droneMission.uuid, droneMission.name, droneMission.data
-                         FROM droneMission,
-                              account
-                         WHERE ((droneMission.user = ?) OR ((account.admin = 1) AND (account.uuid = ?)))
-                           AND droneMission.uuid = ?`;
-            global.connection.query(sql, [user, user, missionUUID], function (err, result) {
 
-                if (result && result[0]) {
-                    resolve(result[0]);
-                } else {
-                    resolve({name: "Not found", error: true});
-                }
+            const droneMission = global.database.collection("droneMission");
+            droneMission.findOne({
+                user: user,
+                uuid: missionUUID
+            }).then((mission)=>{
+                 if(mission!==null) {
+                     resolve(mission);
+                 }else{
+                     axios("http://account:3000/api/v1/account/isUserAdmin?uuid="+user).then(parsed => {
+                        if(parsed.data.isAdmin) {
+                        droneMission.findOne({
+                            uuid: missionUUID
+                        }).then((adminMission)=>{
+                            if(adminMission!==null) {
+                                resolve(adminMission);
+                            }else{
+                                resolve({name: "Not found", error: true});
+                            }
+
+                        })
+                        }else{
+                            resolve({name: "Not found", error: true});
+                        }
+
+                     });
+
+                 }
             });
-
-
         });
     },
     saveMissionData: function (user, missionUUID, data) {
-
-
+        //TODO add Error if update hasn't work
         return new Promise((resolve, reject) => {
-            const sql = `UPDATE droneMission,account
-                         SET droneMission.data = ?
-                         WHERE ((droneMission.user = ?) OR ((account.admin = 1) AND (account.uuid = ?)))
-                           AND droneMission.uuid = ? `;
-            global.connection.query(sql, [data, user, user, missionUUID], function (err, result) {
-
-                resolve();
-            });
-
+            const droneMission = global.database.collection("droneMission");
+            droneMission.updateOne({user: user,uuid: missionUUID},{$set: {data: data}}).then((res)=>{
+                if(res.matchedCount===0) {
+                    axios("http://account:3000/api/v1/account/isUserAdmin?uuid="+user).then(parsed => {
+                        if (parsed.data.isAdmin) {
+                            droneMission.updateOne({uuid: missionUUID},{$set: {data: data}}).then((res)=>{
+                                resolve();
+                            });
+                        }else{
+                            resolve();
+                        }
+                    });
+                }else{
+                    resolve();
+                }
+            })
 
         });
     },
@@ -75,16 +92,10 @@ var drone = {
         return new Promise((resolve, reject) => {
         this.getDroneMissionData(user, missionUUID).then(check => {
             if (!check.error) {
-
-                    const sql = `DELETE
-                                 FROM droneMission
-                                 WHERE (droneMission.uuid = ?) `;
-                    global.connection.query(sql, [missionUUID], function (err, result) {
-
-                        resolve(true);
-                    });
-
-
+                const droneMission = global.database.collection("droneMission");
+                droneMission.deleteOne({uuid:missionUUID}).then(()=>{
+                    resolve(true);
+                })
 
             }else{
                 resolve(false);
@@ -97,14 +108,23 @@ var drone = {
 
     renameMission: function (user, missionUUID, newName) {
         return new Promise((resolve, reject) => {
-            const sql = `UPDATE droneMission,account
-                         SET droneMission.name = ?
-                         WHERE ((droneMission.user = ?) OR ((account.admin = 1) AND (account.uuid = ?)))
-                           AND droneMission.uuid = ? `;
-            global.connection.query(sql, [newName, user, user, missionUUID], function (err, result) {
 
-                resolve();
-            });
+            const droneMission = global.database.collection("droneMission");
+            droneMission.updateOne({user: user,uuid: missionUUID},{$set:{name: newName}}).then((res)=>{
+                if(res.matchedCount===0) {
+                    axios("http://account:3000/api/v1/account/isUserAdmin?uuid="+user).then(parsed => {
+                        if (parsed.data.isAdmin) {
+                            droneMission.updateOne({uuid: missionUUID},{$set: {name: newName}}).then((res)=>{
+                                resolve();
+                            });
+                        }else{
+                            resolve();
+                        }
+                    });
+                }else{
+                    resolve();
+                }
+            })
 
 
         });
