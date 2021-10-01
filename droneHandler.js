@@ -7,7 +7,7 @@ module.exports.init = function initDronePaths() {
 
     app.post('/api/v1/drone/mission/createMission', (req, res) => {
 
-        if (req.body.session&&req.body.name) {
+        if (req.body.session!=null&&req.body.name!=null) {
             if(req.body.name.toString().length<4&&req.body.name.toString().length>49) {
                 res.send(`{"success":false,"error":"String too long"}`);
                 return;
@@ -45,7 +45,7 @@ module.exports.init = function initDronePaths() {
 
     app.get('/api/v1/drone/mission/listMissions', (req, res) => {
 
-        if (req.query.session) {
+        if (req.query.session!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -85,7 +85,7 @@ module.exports.init = function initDronePaths() {
 
     app.get('/api/v1/drone/mission/getMissionData', (req, res) => {
 
-        if (req.query.session&&req.query.missionUUID) {
+        if (req.query.session!=null&&req.query.missionUUID!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -124,7 +124,7 @@ module.exports.init = function initDronePaths() {
 
     app.get('/api/v1/drone/mission/deleteDroneMission', (req, res) => {
 
-        if (req.query.session&&req.query.missionUUID) {
+        if (req.query.session!=null&&req.query.missionUUID!=null) {
             session.validateSession(req.query.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.query.session);
@@ -169,7 +169,7 @@ module.exports.init = function initDronePaths() {
 
     app.post('/api/v1/drone/mission/saveMissionData', (req, res) => {
 
-        if (req.body.session&&req.body.missionUUID&&req.body.data) {
+        if (req.body.session!=null&&req.body.missionUUID!=null&&req.body.data!=null) {
             session.validateSession(req.body.session.toString(), (isValid) => {
                 if (isValid) {
                     session.reactivateSession(req.body.session);
@@ -207,7 +207,7 @@ module.exports.init = function initDronePaths() {
 
     app.post('/api/v1/drone/mission/renameDroneMission', (req, res) => {
 
-        if (req.body.session&&req.body.newMissionName&&req.body.missionUUID) {
+        if (req.body.session!=null&&req.body.newMissionName!=null&&req.body.missionUUID!=null) {
             if(req.body.newMissionName.toString().length<4&&req.body.newMissionName.toString().length>49) {
                 res.send(`{"success":false,"error":"String too long"}`);
                 return;
