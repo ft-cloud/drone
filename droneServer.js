@@ -17,6 +17,7 @@ client.connect().then(()=> {
 const cors = require('cors');
 
 const droneHandler = require('./droneHandler')
+const missionGeneratorHandler = require('./missionGeneratorHandler')
 
 
 app.use(express.json());
@@ -35,6 +36,7 @@ app.listen(3000, () => {
 
 
 droneHandler.init();
+missionGeneratorHandler.init();
 
 app.use(function (req, res) {
     res.status(404).send('Something went wrong! Microservice: Drone');
