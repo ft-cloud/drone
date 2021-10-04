@@ -1,4 +1,7 @@
-function lineinterection(A, B, C, D) {
+function lineinterection(A, B, C, D, checkAlign = undefined) {
+    if(checkAlign === undefined){
+        checkAlign=true;
+    }
     intersect = true;
     Dn = (B[0] - A[0]) * -(D[1] - C[1]) - (B[1] - A[1]) * -(D[0] - C[0]);
     Dx = (C[0] - A[0]) * -(D[1] - C[1]) - (C[1] - A[1]) * -(D[0] - C[0]);
@@ -9,16 +12,16 @@ function lineinterection(A, B, C, D) {
     wy = (B[1] - A[1]) * alpha;
     x = A[0] + wx;
     y = A[1] + wy;
-    if (x == Infinity || y == Infinity) {
+    if (x === Infinity || y === Infinity) {
         //console.log("parralel");
-        intersect = false;
+       intersect = false;
     }
 
-    if (x == NaN || y == NaN) {
+    if (isNaN(x) || isNaN(y)) {
         intersect = false;
     }
 //Math.sqrt(Math.pow(wx,2)+Math.pow(wy,2)) >= Math.sqrt(Math.pow(B[0]-A[0],2)+Math.pow(B[1]-A[1],2)) || wx+Math.abs[wx] == (B[0]-A[0])+Math.abs(B[0]-A[0])  || wy+Math.abs[wy] == (B[1]-A[1])+Math.abs(B[1]-A[1])
-    if (alpha < 0 || alpha > 1 || beta < 0 || beta > 1) {
+    if (alpha < 0 || alpha > 1 || beta < 0 || beta > 1 && checkAlign) {
 //console.log("no intersect");
         intersect = false;
     }
@@ -76,15 +79,18 @@ function routeToGPSroute(polygon,zeroPoint) {
     return polygonObjectArray;
 }
 
-function checkPolygonBorderIntersection(polygon, A, B) {
+function checkPolygonBorderIntersection(polygon, A, B, checkAlign = undefined) {
+    if(checkAlign === undefined){
+        checkAlign=true;
+    }
     var items = []
     for (i = 0; i < polygon.length - 1; i++) {
-        var r = lineinterection(polygon[i], polygon[i + 1], A, B);
+        var r = lineinterection(polygon[i], polygon[i + 1], A, B, checkAlign);
         if (r[2] === true) {
             items.push([r[0], r[1], i]);
         }
     }
-    var b = lineinterection(polygon[polygon.length - 1], polygon[0], A, B);
+    var b = lineinterection(polygon[polygon.length - 1], polygon[0], A, B, checkAlign);
     if (b[2] === true) {
         items.push([b[0], b[1], polygon.length - 1]);
     }
@@ -110,6 +116,8 @@ function getLine(A, angle, distance) {
 
 function createZigZagRoute(polygon, keepouts, startposition = undefined, startangle = undefined) {
 //console.log(lineinterection([0,1],[4,0],[0,2],[2,0])[2]);
+    const DistanceToPolygon = 4
+
     const outroute = [];
     polygon = jsonGPSPolygontopolygon(polygon)
     zeropoint = polygon[1];
@@ -123,29 +131,44 @@ function createZigZagRoute(polygon, keepouts, startposition = undefined, startan
     if (startangle == undefined) {
         startangle = calculateAngle(polygon[0], polygon[1]);
     }
+
+    /*
     console.log(checkPolygonBorderIntersection(polygon, [49.99180378186631, 9.223430172719237], [49.99227281219823, 9.22333897761273]));
     console.log(startangle * 180 / Math.PI);
 //console.log(checkinsidepolygon(polygon, [49.99180378186631,9.223430172719237], 5));
     console.log(calculateAnglebetweenLines(polygon[polygon.length - 1], startposition, polygon[1]));
 
-    var a = calculateAngle(polygon[1], polygon[0]);
+    var flylineangle = calculateAngle(polygon[0], polygon[1]);
 
-    var s = [(polygon[0][0] + Math.sin(a) * 4 + Math.sin(a + (90 * Math.PI / 180)) * 4), (polygon[0][1] + Math.cos(a) * 4 + Math.cos(a + (90 * Math.PI / 180)) * 4)]
-    console.log(a);
-    polygon.push(s);
-    var d = 0;
-    var bla = [];
-    var t = true;
-    while(bla.length<1 && t){
-    bla = checkPolygonBorderIntersection(polygon, s, getLine(s, a, d));
-    d += 0.01;
-    console.log(bla);
-    console.log(getLine(s, a, d));
+    var startpoint = [(polygon[0][0] + Math.sin(flylineangle) * 4 + Math.sin(flylineangle + (90 * Math.PI / 180)) * 4), (polygon[0][1] + Math.cos(flylineangle) * 4 + Math.cos(flylineangle + (90 * Math.PI / 180)) * 4)]
+    console.log(flylineangle);
+    polygon.push(startpoint);
 
-    if (d > 1) {
-        t = false;
-    }
-}
+    var d = 100;
+    var polygonintersectionpoint = [];
+
+    polygonintersectionpoint = checkPolygonBorderIntersection(polygon, startpoint, getLine(startpoint, flylineangle, d))[0];
+    polygonintersectionlingangle = calculateAngle(polygon[polygonintersectionpoint[2]],polygon[polygonintersectionpoint[2]+1])
+    polygon.push(polygonintersectionpoint)
+
+    var backsetpoint = [polygonintersectionpoint[0] + Math.sin(flylineangle) * -DistanceToPolygon, polygonintersectionpoint[1] + Math.cos(flylineangle) * -DistanceToPolygon]
+    polygon.push(backsetpoint)
+
+*/
+
+    var flylineangle = calculateAngle(polygon[0], polygon[1])
+    var startpoint = polygon[0]
+    var lineDistance = 4
+
+    var point = [startpoint[0] + Math.sin(flylineangle+Math.PI/2) * lineDistance, startpoint[1] + Math.cos(flylineangle+Math.PI/2) * lineDistance]
+
+    var intersection = checkPolygonBorderIntersection(polygon, point, [point[0] + Math.sin(flylineangle) * 100, point[1] + Math.cos(flylineangle) * 100], false)
+    console.log(intersection);
+    polygon.push(point)
+    polygon.push(intersection[0])
+
+
+
     return routeToGPSroute(polygon, zeropoint);
 }
 
