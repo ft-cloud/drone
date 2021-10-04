@@ -69,7 +69,7 @@ function jsonGPSPolygontopolygon(jsonpolygon) {
 function routeToGPSroute(polygon,zeroPoint) {
     let polygonObjectArray = []
 
-    for (let i = 0; i < polygon.length; i++) {
+    for (let i = 0; i < polygon.length-1; i++) {
 
         const lat = latitudeMeterDistance(polygon[i][0])+zeroPoint[0];
         const long = longitudeMeterDistance(polygon[i][1], lat)+zeroPoint[1];
@@ -120,15 +120,15 @@ function createZigZagRoute(polygon, keepouts, startposition = undefined, startan
 
     const outroute = [];
     polygon = jsonGPSPolygontopolygon(polygon)
-    zeropoint = polygon[1];
+    var zeropoint = polygon[1];
     polygon = polygon[0];
     console.log(polygon, "zeropoint: ", zeropoint);
     if (polygon.length < 3) return;
 
-    if (startposition == undefined) {
+    if (startposition === undefined) {
         startposition = polygon[0];
     }
-    if (startangle == undefined) {
+    if (startangle === undefined) {
         startangle = calculateAngle(polygon[0], polygon[1]);
     }
 

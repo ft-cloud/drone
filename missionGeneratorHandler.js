@@ -10,7 +10,7 @@ app.post("/api/v1/drone/missionGeneratorPolygonZigZagOverfly",(req,res)=>{
 
         }catch (e) {
             res.send('{\"error\":\"No valid inputs!\",\"errorcode\":\"002\"}');
-
+console.log(e);
         }
     }else{
         res.send('{\"error\":\"No valid inputs!\",\"errorcode\":\"002\"}');
