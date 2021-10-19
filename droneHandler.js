@@ -176,8 +176,8 @@ module.exports.init = function initDronePaths() {
                     session.getUserUUID(req.body.session.toString(), (uuid) => {
                         if (uuid) {
 
-
-                            drone.saveMissionData(uuid,req.body.missionUUID.toString(),req.body.data.toString()).then(results => {
+                            console.log(typeof req.body.data);
+                            drone.saveMissionData(uuid,req.body.missionUUID.toString(),req.body.data).then(results => {
 
                                 res.send(JSON.stringify({
                                     success: true
