@@ -164,7 +164,12 @@ function polygonLineSnipper(polygon, lines){
             out.push([k[2], k[3]]);
             out.push([k[4], k[5]]);
         }
-
+        if(k.length===8){
+            out.push([k[0], k[1]]);
+            out.push([k[2], k[3]]);
+            out.push([k[4], k[5]]);
+            out.push([k[6], k[7]]);
+        }
     }
 
     return out;
@@ -174,13 +179,14 @@ function pointDistance(A, B){
 }
 function LineShortConnector(lines){
     let out=[];
-console.log("ll",lines);
     let point=[];
     let minDistance=1000;
-    let tp = lines[5][1]
+    let tp = lines[0][1]
     for(let i=0;i<lines.length;i++){
     minDistance=1000;
     point=[];
+    let templi=0;
+    let tempc=0;
     for(let li=0;li<lines.length;li++){
         loop1:for(let c=0;c<2;c++){
             if(lines[li][c] === tp){
@@ -195,17 +201,43 @@ console.log("ll",lines);
             if(testdistance < minDistance){
                 minDistance=testdistance;
                 point=lines[li][c]
+                templi=li;
+                tempc=c;
             }
         }
     }
     out.push(point);
-    tp=point;
+    if(tempc===0){
+        tempc=1;
+    }else if(tempc===1){
+        tempc=0;
+    }
+    tp=lines[templi][tempc];
+    out.push(tp);
 
     }
-    out.push(lines[5][0]);
-    out.push(lines[5][1]);
-    out.push(point);
-return out;
+    return out;
+}
+
+function lineSorter(lines){
+    let out=[]
+    let p=0;
+    let s=1;
+     for(let i=0;i<lines.length;i++){
+          for(let j=0;j<2;j++){
+             out.push(lines[i][p])
+             p+=s;
+             if(p>1){
+                 p=1;
+                 s=-1;
+             }
+             if(p<0){
+                 p=0;
+                 s=1;
+             }
+         }
+     }
+     return out;
 }
 
 function createZigZagRoute(polygon, keepouts, startposition = undefined, startangle = undefined) {
