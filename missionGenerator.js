@@ -2,7 +2,7 @@ function lineinterection(A, B, C, D, checkAlign = undefined) {
     if(checkAlign === undefined){
         checkAlign=true;
     }
-    intersect = true;
+    let intersect = true;
     Dn = (B[0] - A[0]) * -(D[1] - C[1]) - (B[1] - A[1]) * -(D[0] - C[0]);
     Dx = (C[0] - A[0]) * -(D[1] - C[1]) - (C[1] - A[1]) * -(D[0] - C[0]);
     Dy = (B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]);
@@ -69,7 +69,7 @@ function jsonGPSPolygontopolygon(jsonpolygon) {
 function routeToGPSroute(polygon,zeroPoint) {
     let polygonObjectArray = []
 
-    for (let i = 0; i < polygon.length-1; i++) {
+    for (let i = 0; i < polygon.length; i++) {
 
         const lat = latitudeMeterDistance(polygon[i][0])+zeroPoint[0];
         const long = longitudeMeterDistance(polygon[i][1], lat)+zeroPoint[1];
@@ -114,6 +114,100 @@ function getLine(A, angle, distance) {
     return [A[0] + Math.sin(angle) * distance, A[1] + Math.cos(angle) * distance];
 }
 
+function getSurroundingRectangle(polygon){
+    let min = [polygon[0][0],polygon[0][1]];
+    let max = [polygon[0][0],polygon[0][1]];
+    for(i=0;i<polygon.length;i++){
+        if(polygon[i][0]>max[0]){
+            max[0]=polygon[i][0];
+        }
+        if(polygon[i][1]>max[1]){
+            max[1]=polygon[i][1];
+        }
+        if(polygon[i][0]<min[0]){
+            min[0]=polygon[i][0];
+        }
+        if(polygon[i][1]<min[1]){
+            min[1]=polygon[i][1];
+        }
+    }
+    return [[min[0],min[1]], [min[0],max[1]], [max[0],min[1]], [max[0], max[1]]];
+}
+
+function fillHorizontalRectangle(rectangle, distance, tolerance){
+    let len = rectangle[2][0]-rectangle[0][0];
+    let out = []
+    let b=len/distance;
+    console.log("b ",b, "len ", len)
+    for(i=0;i<=len;i+=(len/b)){
+        out.push([[i+rectangle[0][0],rectangle[0][1]], [i+rectangle[0][0],rectangle[1][1]]])
+    }
+    return out;
+}
+
+function polygonLineSnipper(polygon, lines){
+    let out=[];
+    //console.log("linew ",lines)
+
+    for(let ii=0;ii<lines.length;ii+=1){
+       let k = checkPolygonBorderIntersection(polygon, lines[ii][0], lines[ii][1], true)
+        console.log("k ",k, "le ",k.length)
+        if(k.length===2){
+            out.push([k[0], k[1]]);
+        }
+        if(k.length===4){
+            out.push([k[0], k[1]])
+            out.push([k[2], k[3]])
+        }
+        if(k.length===6){
+            out.push([k[0], k[1]]);
+            out.push([k[2], k[3]]);
+            out.push([k[4], k[5]]);
+        }
+
+    }
+
+    return out;
+}
+function pointDistance(A, B){
+    return Math.sqrt(Math.pow(B[0]-A[0],2) + Math.pow(B[1]-A[1],2))
+}
+function LineShortConnector(lines){
+    let out=[];
+console.log("ll",lines);
+    let point=[];
+    let minDistance=1000;
+    let tp = lines[5][1]
+    for(let i=0;i<lines.length;i++){
+    minDistance=1000;
+    point=[];
+    for(let li=0;li<lines.length;li++){
+        loop1:for(let c=0;c<2;c++){
+            if(lines[li][c] === tp){
+                break;
+            }
+            for(let z=0;z<out.length;z++){
+                if(out[z]===lines[li][c]){
+                    break loop1;
+                }
+            }
+            let testdistance=pointDistance(lines[li][c], tp)
+            if(testdistance < minDistance){
+                minDistance=testdistance;
+                point=lines[li][c]
+            }
+        }
+    }
+    out.push(point);
+    tp=point;
+
+    }
+    out.push(lines[5][0]);
+    out.push(lines[5][1]);
+    out.push(point);
+return out;
+}
+
 function createZigZagRoute(polygon, keepouts, startposition = undefined, startangle = undefined) {
 //console.log(lineinterection([0,1],[4,0],[0,2],[2,0])[2]);
     const DistanceToPolygon = 4
@@ -155,7 +249,7 @@ function createZigZagRoute(polygon, keepouts, startposition = undefined, startan
     polygon.push(backsetpoint)
 
 */
-
+/*
     var flylineangle = calculateAngle(polygon[0], polygon[1])
     var startpoint = polygon[0]
     var lineDistance = 4
@@ -166,9 +260,9 @@ function createZigZagRoute(polygon, keepouts, startposition = undefined, startan
     console.log(intersection);
     polygon.push(point)
     polygon.push(intersection[0])
-
-
-
+*/
+    let out=(fillHorizontalRectangle(getSurroundingRectangle(polygon), 20, 0));
+    polygon = LineShortConnector(polygonLineSnipper(polygon,out));
     return routeToGPSroute(polygon, zeropoint);
 }
 
