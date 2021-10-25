@@ -52,12 +52,12 @@ var drone = {
                             if(adminMission!==null) {
                                 resolve(adminMission);
                             }else{
-                                resolve({name: "Not found", error: true});
+                                resolve(undefined);
                             }
 
                         })
                         }else{
-                            resolve({name: "Not found", error: true});
+                            resolve(undefined);
                         }
 
                      });
