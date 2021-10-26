@@ -269,15 +269,18 @@ module.exports.init = function initDronePaths() {
 
     });
 
+    /**
+     * Get all Missions a user has access to
+     */
     app.get('/api/v2/drone/missions', (req, res) => {
 
         session.transformSecurelySessionToUserUUID(res, req).then((uuid) => {
             if (uuid != null) {
                 drone.getAllUserMissions(uuid).then(results => {
 
-                    res.status(200).send(JSON.stringify({
+                    res.status(200).json({
                         missions: results
-                    }));
+                    });
 
                 });
 
@@ -288,6 +291,9 @@ module.exports.init = function initDronePaths() {
     });
 
 
+    /**
+     * Get data from the given resource
+     */
     app.get('/api/v2/drone/missions/:mission', (req, res) => {
 
         session.transformSecurelySessionToUserUUID(req, req).then(uuid => {
@@ -295,12 +301,10 @@ module.exports.init = function initDronePaths() {
                 drone.getDroneMissionData(uuid, req.params.mission).then(results => {
 
                     if (results != null) {
-                        res.status(200).json({
-                            mission: results
-                        });
+                        res.status(200).json(results);
 
                     } else {
-                        res.status(404).end();
+                        res.status(404).json({error: "Resource not found", errorcode: "015"});
                     }
 
 
@@ -311,7 +315,9 @@ module.exports.init = function initDronePaths() {
 
 
     });
-
+    /**
+     * Delete a specific resource
+     */
     app.delete('/api/v2/drone/missions/:mission', (req, res) => {
 
 
@@ -322,7 +328,7 @@ module.exports.init = function initDronePaths() {
                     if (results) {
                         res.status(204).end();
                     } else {
-                        res.status(404).json({error: "Content not found", errorcode: "015"});
+                        res.status(404).json({error: "Resource not found", errorcode: "015"});
                     }
 
                 });
@@ -332,43 +338,62 @@ module.exports.init = function initDronePaths() {
 
     });
 
-    app.put('/api/v2/drone/missions/:mission', (req, res) => {
-
-        session.transformSecurelySessionToUserUUID(res, req).then(uuid => {
-            if (uuid != null) {
-                drone.saveMissionData(uuid, req.params.mission, req.body.data).then(results => {
-
-                    res.status(204).end();
-                });
-
-            }
-        });
-
-
-    });
-
+    /**
+     * updates the specific resource data (mission)
+     */
     app.patch('/api/v2/drone/missions/:mission', (req, res) => {
+        if (req.body.resource != null) {
 
-        if (req.body.newMissionName != null) {
-            if (req.body.newMissionName.toString().length < 4 && req.body.newMissionName.toString().length > 49) {
-                res.status(400).json({success: false, error: "String too long"});
-                return;
-            }
+            session.transformSecurelySessionToUserUUID(res, req).then(uuid => {
+                if (uuid != null) {
 
 
-            session.transformSecurelySessionToUserUUID(req, req).then(uuid => {
-                if(uuid!=null) {
-                    drone.renameMission(uuid, req.params.mission.toString(), req.body.newMissionName.toString()).then(results => {
+                    const promises = [];
+                    let resource;
+                    try {
+                        resource = JSON.parse(req.body.resource);
+                    } catch (e) {
+                        res.status(400).json({error: "JSON can not be parsed", errorcode: "016"});
+                        return;
+                    }
 
+
+                    if (resource.name) {
+
+                        if (resource.name.toString().length < 4 && resource.name.toString().length > 49) {
+                            res.status(400).json({success: false, error: "String too long or too short"});
+                            return;
+                        }
+                        const renamePromise = drone.renameMission(uuid, req.params.mission.toString(), resource.name.toString());
+                        promises.push(renamePromise);
+
+                    }
+
+                    if (resource.data) {
+                        const updateDataPromise = drone.saveMissionData(uuid, req.params.mission, resource.data);
+                        promises.push(updateDataPromise);
+
+                    }
+
+                    if (promises.length > 0) {
+                        Promise.all(promises).then((result) => {
+                            console.log(result)
+                            if (result.every(e => e === true)) {
+                                res.status(204).end();
+                            } else {
+                                res.status(404).json({error: "Resource not found", errorcode: "015"});
+                            }
+                        });
+                    } else {
                         res.status(204).end();
-                    });
+                    }
+
                 }
             });
-
-
         } else {
             res.status(400).json({error: "No valid inputs!", errorcode: "002"});
         }
+
 
     });
 
