@@ -292,11 +292,11 @@ module.exports.init = function initDronePaths() {
 
 
     /**
-     * Get data from the given resource
+     * Get data from the given resource (mission)
      */
     app.get('/api/v2/drone/missions/:mission', (req, res) => {
 
-        session.transformSecurelySessionToUserUUID(req, req).then(uuid => {
+        session.transformSecurelySessionToUserUUID(res, req).then(uuid => {
             if (uuid != null) {
                 drone.getDroneMissionData(uuid, req.params.mission).then(results => {
 
@@ -346,7 +346,6 @@ module.exports.init = function initDronePaths() {
 
             session.transformSecurelySessionToUserUUID(res, req).then(uuid => {
                 if (uuid != null) {
-
 
                     const promises = [];
                     let resource;
