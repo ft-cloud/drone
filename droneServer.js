@@ -2,6 +2,8 @@ const express = require('express');
 const https = require("https");
 const fs = require("fs");
 const app = express();
+const cookieParser = require('cookie-parser')
+
 module.exports.app = app;
 
 
@@ -22,6 +24,7 @@ const missionGeneratorHandler = require('./missionGeneratorHandler')
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.use(cookieParser())
 
 
 app.use(cors());
