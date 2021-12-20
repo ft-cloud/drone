@@ -1,12 +1,13 @@
-const {app} = require('./droneServer.js');
-const missionGenerator = require("./missionGenerator");
+import {app} from "./droneServer.js";
 
-module.exports.init = function initMissionsGeneratorPaths() {
+import {MissionGenerator} from "./missionGenerator.js";
+
+export function initMissionsGeneratorPaths() {
     app.post("/api/v1/drone/missionGeneratorPolygonZigZagOverfly", (req, res) => {
         if (req.body.jsonpolygon != null) {
                 const polygon = req.body.jsonpolygon;
 
-                missionGenerator.createZigZagRoute(polygon).then(route => {
+            MissionGenerator.createZigZagRoute(polygon).then(route => {
                     res.json({route: route, success: true});
                 });
 

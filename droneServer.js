@@ -1,13 +1,24 @@
-const express = require('express');
-const https = require("https");
-const fs = require("fs");
-const app = express();
-const cookieParser = require('cookie-parser')
+import express from "express";
 
-module.exports.app = app;
+import https from "https";
+
+import fs from "fs";
+
+import cookieParser from "cookie-parser";
+
+import {MongoClient} from "mongodb";
+
+import cors from "cors";
+
+import {initDronePaths} from "./droneHandler.js";
+
+import {initMissionsGeneratorPaths} from "./missionGeneratorHandler.js";
+
+export const app = express();
 
 
-const { MongoClient } = require("mongodb");
+
+
 const uri = `mongodb://root:${process.env.MYSQL_ROOT_PASSWORD}@mongo:27017/?authSource=admin&readPreference=primary&directConnection=true&ssl=false`
 const client = new MongoClient(uri);
 
@@ -15,13 +26,6 @@ client.connect().then(()=> {
     global.database = client.db("cloud");
 
 })
-
-const cors = require('cors');
-
-const droneHandler = require('./droneHandler')
-const missionGeneratorHandler = require('./missionGeneratorHandler')
-
-
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 app.use(cookieParser())
@@ -38,8 +42,8 @@ app.listen(3000, () => {
 });
 
 
-droneHandler.init();
-missionGeneratorHandler.init();
+initDronePaths();
+initMissionsGeneratorPaths();
 
 app.use(function (err,req,res,next){
     if (res.headersSent) {

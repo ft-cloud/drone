@@ -1,8 +1,11 @@
-const session = require("sessionlib/session");
-const drone = require("./drone");
-const {app} = require('./droneServer.js');
+import {session} from "sessionlib/session.js";
 
-module.exports.init = function initDronePaths() {
+import {drone} from "./drone.js";
+
+import {app} from "./droneServer.js";
+
+
+export function initDronePaths() {
 
 
     app.post('/api/v1/drone/mission/createMission', (req, res) => {

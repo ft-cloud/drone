@@ -1,12 +1,13 @@
-const uuid = require('uuid');
-const axios = require('axios');
+import {v4 as uuidV4} from "uuid";
 
-const drone = {
+import axios from "axios";
+
+export const drone = {
 
     addDroneMission: function (user, name, data) {
         return new Promise((resolve => {
             const droneMission = global.database.collection("droneMission");
-            const missionUUID = uuid.v4();
+            const missionUUID = uuidV4();
 
             droneMission.insertOne({
                 uuid: missionUUID,
@@ -136,6 +137,5 @@ const drone = {
 
 };
 
-module.exports = drone;
 
 

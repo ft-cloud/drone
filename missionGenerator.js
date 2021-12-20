@@ -245,7 +245,6 @@ function createZigZagRoute(polygon, keepOuts, startposition = undefined, startAn
     }));
 }
 
-const MissionGenerator = {
+export const MissionGenerator = {
     createZigZagRoute: createZigZagRoute
 };
-module.exports = MissionGenerator;
