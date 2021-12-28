@@ -44,6 +44,7 @@ function convertGPSJSONPolygon(jsonPolygon) {
     return [items, zeroPoint];
 }
 
+
 function ConvertToGPSRoute(polygon, zeroPoint) {
     let polygonObjectArray = [];
 
@@ -242,7 +243,7 @@ function createZigZagRoute(polygon, keepOuts, startposition = undefined, startAn
         polygon = LineShortConnector(polygonLineCutter(polygon, out));
         resolve(ConvertToGPSRoute(polygon, zeroPoint));
 
-    }));
+    })).catch(console.error);
 }
 
 export const MissionGenerator = {
