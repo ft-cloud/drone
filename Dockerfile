@@ -10,6 +10,7 @@ RUN if [ "${mode}" = "dev" ] ; then npm install ; else npm install --production 
 
 EXPOSE 3000
 
+EXPOSE 8846
 
 COPY . /src
 
