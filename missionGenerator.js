@@ -239,7 +239,7 @@ function createZigZagRoute(polygon, keepOuts, startposition = undefined, startAn
         }
 
 
-        let out = (fillHorizontalRectangle(getSurroundingRectangle(polygon), 20, 0));
+        let out = (fillHorizontalRectangle(getSurroundingRectangle(polygon), 7, 0));
         polygon = LineShortConnector(polygonLineCutter(polygon, out));
         resolve(ConvertToGPSRoute(polygon, zeroPoint));
 
