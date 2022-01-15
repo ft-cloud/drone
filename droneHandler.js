@@ -97,10 +97,16 @@ export function initDronePaths() {
 
                             drone.getDroneMissionData(uuid, req.query.missionUUID.toString()).then(results => {
 
-                                res.send(JSON.stringify({
-                                    success: true,
-                                    mission: results
-                                }));
+                                if(results) {
+                                    res.send(JSON.stringify({
+                                        success: true,
+                                        mission: results
+                                    }));
+                                }else{
+                                    res.send(JSON.stringify({
+                                        success: false
+                                    }));
+                                }
 
                             });
 
